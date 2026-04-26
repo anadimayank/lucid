@@ -1,0 +1,19 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: lucid-subscription-validator
+webhooks:
+- name: subscription-validator.lucid-project.io
+  admissionReviewVersions: ["v1"]
+  clientConfig:
+    service:
+      name: lucid-manager-webhook-service
+      namespace: lucid-system
+      path: "/validate-olm-subscription"
+  rules:
+  - operations: ["CREATE", "UPDATE"]
+    apiGroups: ["operators.coreos.com"]
+    apiVersions: ["v1alpha1"]
+    resources: ["subscriptions", "installplans"]
+  sideEffects: None
+  failurePolicy: Fail

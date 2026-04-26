@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lucid-manager
+  namespace: lucid-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      control-plane: lucid-manager
+  template:
+    metadata:
+      labels:
+        control-plane: lucid-manager
+    spec:
+      serviceAccountName: lucid-manager
+      containers:
+      - name: manager
+        image: lucid-manager:latest
+        args: ["manager"]
+        ports:
+        - containerPort: 8443
+          name: webhook-port
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8443
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lucid-manager-webhook-service
+  namespace: lucid-system
+spec:
+  ports:
+  - port: 443
+    targetPort: 8443
+    name: https
+  selector:
+    control-plane: lucid-manager
